@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 # --
-# bin/otrs.PrepareHTMLDocumentation.pl - create new translation file
-# Copyright (C) 2001-2014 OTRS AG, http://otrs.com/
+# Copyright (C) 2001-2015 OTRS AG, http://otrs.com/
 # --
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU AFFERO General Public License as published by
@@ -53,33 +52,32 @@ sub FindHTMLFiles {
     my @HTMLFiles;
 
     my $Wanted = sub {
-        return if (!-f $File::Find::name);
-        return if (substr($File::Find::name, -5) ne '.html');
+        return if ( !-f $File::Find::name );
+        return if ( substr( $File::Find::name, -5 ) ne '.html' );
         push @HTMLFiles, $File::Find::name;
     };
-    File::Find::find($Wanted, $RealBin);
+    File::Find::find( $Wanted, $RealBin );
 
     return @HTMLFiles;
 }
 
-
 sub ProcessHTMLFile {
     my %Param = @_;
 
-    if (!$Param{File}) {
+    if ( !$Param{File} ) {
         die "Need File.";
     }
 
-    my $SubPath   = substr($Param{File}, length($RealBin));
+    my $SubPath = substr( $Param{File}, length($RealBin) );
     my @Sublevels = split m{/}, $SubPath;
-    my $PathToJS  = join('/', map { '..' } (1 .. (@Sublevels - 2)));
+    my $PathToJS = join( '/', map {'..'} ( 1 .. ( @Sublevels - 2 ) ) );
     $PathToJS ||= '.';
 
-    my $HTMLContent = ReadFile(File => $Param{File});
+    my $HTMLContent = ReadFile( File => $Param{File} );
 
     my $FinalContent = $HTMLContent;
 
-    my $HTMLInject =<<"EOF";
+    my $HTMLInject = <<"EOF";
 <!-- otrs.github.io -->
 <link href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
@@ -89,7 +87,8 @@ sub ProcessHTMLFile {
 <!-- otrs.github.io -->
 EOF
 
-    if ($FinalContent !~ m{<!--[ ]otrs.github.io[ ]-->}smx) {
+    if ( $FinalContent !~ m{<!--[ ]otrs.github.io[ ]-->}smx ) {
+
         # original file, inject HTML in header
         # remove pre-existing style tags first
         $FinalContent =~ s{<link\s+rel="stylesheet"[^>]+>}{}smxg;
@@ -103,7 +102,7 @@ EOF
     return 1 if $FinalContent eq $HTMLContent;
 
     WriteFile(
-        File => $Param{File},
+        File    => $Param{File},
         Content => $FinalContent,
     );
 
@@ -113,24 +112,24 @@ EOF
 sub ReadFile {
     my %Param = @_;
 
-    if (!$Param{File}) {
+    if ( !$Param{File} ) {
         die "Need File.";
     }
 
     my $FileHandle = IO::File->new( $Param{File}, 'r' );
     my @Lines = $FileHandle->getlines();
-    return join('', @Lines);
+    return join( '', @Lines );
 }
 
 sub WriteFile {
     my %Param = @_;
 
-    if (!$Param{File} || !$Param{Content}) {
+    if ( !$Param{File} || !$Param{Content} ) {
         die "Need File and Content.";
     }
 
     my $FileHandle = IO::File->new( $Param{File}, 'w' );
-    $FileHandle->print($Param{Content});
+    $FileHandle->print( $Param{Content} );
 }
 
 Run();
